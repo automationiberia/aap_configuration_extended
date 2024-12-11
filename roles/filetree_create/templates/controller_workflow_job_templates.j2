@@ -16,6 +16,9 @@ controller_workflows:
                      host=aap_hostname, oauth_token=aap_oauthtoken, verify_ssl=aap_validate_certs,
                      return_all=true, max_objects=query_controller_api_max_objects) %}
       - identifier: "{{ node.identifier }}"
+{% if node.summary_fields.inventory is defined %}
+        inventory: "{{ node.summary_fields.inventory.name }}"
+{% endif %}
         workflow_job_template: "{{ node.summary_fields.workflow_job_template.name }}"
 {% if node.summary_fields.unified_job_template.unified_job_type is not match('approval') %}
         unified_job_template: "{{ node.summary_fields.unified_job_template.name | default('ToDo: The node is pointing to a deleted Job Template') }}"
@@ -82,6 +85,9 @@ controller_workflows:
     ask_limit_on_launch: {{ template_overrides_resources.workflow_job_template[current_workflow_job_templates_asset_value.name].ask_limit_on_launch
                             | default(template_overrides_global.workflow_job_template.ask_limit_on_launch)
                             | default(current_workflow_job_templates_asset_value.ask_limit_on_launch | bool | lower) }}
+    ask_inventory_on_launch: {{ template_overrides_resources.workflow_job_template[current_workflow_job_templates_asset_value.name].ask_inventory_on_launch
+                                | default(template_overrides_global.workflow_job_template.ask_inventory_on_launch)
+                                | default(current_workflow_job_templates_asset_value.ask_inventory_on_launch | bool | lower) }}
     webhook_service: "{{ template_overrides_resources.workflow_job_template[current_workflow_job_templates_asset_value.name].description
                          | default(template_overrides_global.workflow_template.webhook_service)
                          | default(current_workflow_job_templates_asset_value.webhook_service) }}"
