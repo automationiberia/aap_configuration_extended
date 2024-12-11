@@ -40,10 +40,10 @@ controller_workflows:
                                | default(template_overrides_global.workflow_job_template.extra_data)
                                | default(node.extra_data)
 -%}
-{%   for extra_data_item in (extra_data_contents | dict2items) if ((extra_data_item.value | string | length) > 0 and (extra_data_item.value | string) is not match('Null')) %}
+{%   for extra_data_item in (extra_data_contents | dict2items) if ((extra_data_item.value | string | length) > 0 and (extra_data_item.value | string) is not match('None')) %}
 {%     if extra_data_item.value | type_debug is match('list') %}
           {{ extra_data_item.key }}:
-{%       for current_list_item in extra_data_item.value %}
+{%       for current_list_item in extra_data_item.value if ((extra_data_item.value | string | length) > 0 and (extra_data_item.value | string) is not match('None')) %}
             - {{ (current_list_item | regex_replace("\n", "\\\\n") | regex_replace('"', '\\"')) | regex_replace('(^[^{]*){([{%])(.*)', '!unsafe "\\g<1>{\\g<2>\\g<3>"', multiline=True) }}
 {%       endfor %}
 {%     else %}
@@ -99,10 +99,10 @@ controller_workflows:
                              | default(template_overrides_global.workflow_job_template.extra_vars)
                              | default(current_workflow_job_templates_asset_value.extra_vars) | from_yaml
 -%}
-{%   for extra_vars_item in (extra_vars_contents | dict2items) if ((extra_vars_item.value | string | length) > 0 and (extra_vars_item.value | string) is not match('Null')) %}
+{%   for extra_vars_item in (extra_vars_contents | dict2items) if ((extra_vars_item.value | string | length) > 0 and (extra_vars_item.value | string) is not match('None')) %}
 {%     if extra_vars_item.value | type_debug is match('list') %}
       {{ extra_vars_item.key }}:
-{%       for current_list_item in extra_vars_item.value %}
+{%       for current_list_item in extra_vars_item.value if ((extra_vars_item.value | string | length) > 0 and (extra_vars_item.value | string) is not match('None')) %}
         - {{ (current_list_item | regex_replace("\n", "\\\\n") | regex_replace('"', '\\"')) | regex_replace('(^[^{]*){([{%])(.*)', '!unsafe "\\g<1>{\\g<2>\\g<3>"', multiline=True) }}
 {%       endfor %}
 {%     else %}
@@ -118,25 +118,25 @@ controller_workflows:
 {% endif %}
 {% if query_notification_error | length > 0 %}
     notification_templates_error:
-{% for notification_error  in query_notification_error %}
+{% for notification_error in query_notification_error %}
       - "{{ notification_error.name }}"
 {% endfor %}
 {% endif %}
 {% if query_notification_started | length > 0 %}
     notification_templates_started:
-{% for notification_started  in query_notification_started %}
+{% for notification_started in query_notification_started %}
       - "{{ notification_started.name }}"
 {% endfor %}
 {% endif %}
 {% if query_notification_success | length > 0 %}
     notification_templates_success:
-{% for notification_success  in query_notification_success %}
+{% for notification_success in query_notification_success %}
       - "{{ notification_success.name }}"
 {% endfor %}
 {% endif %}
 {% if query_notification_approvals | length > 0 %}
     notification_templates_approvals:
-{% for notification_approval  in query_notification_approvals %}
+{% for notification_approval in query_notification_approvals %}
       - "{{ notification_approval.name }}"
 {% endfor %}
 {% endif %}
@@ -155,9 +155,9 @@ controller_workflows:
 {% for spec_item in survey_spec_contents %}
       name: "{{ spec_item.name }}"
       spec:
-{%   for survey_item in spec_item.spec if ((survey_item | string | length) > 0 and (survey_item | string) is not match('Null')) %}
+{%   for survey_item in spec_item.spec if ((survey_item | string | length) > 0 and (survey_item | string) is not match('None')) %}
 {%     set _var = namespace(first_survey_item = true) %}
-{%     for survey_item_content in survey_item | dict2items %}
+{%     for survey_item_content in (survey_item | dict2items) if ((survey_item_content.value | string | length) > 0 and (survey_item_content.value | string) is not match('None')) %}
 {%       if survey_item_content.key | regex_search('question_description|default') %}
 {%         set current_content = survey_item_content.key + ': !unsafe "' + (survey_item_content.value | regex_replace("\n", "\\\\n") | regex_replace('"', '\\"')) + '"' %}
 {%       elif survey_item_content.key is not match('choices') %}
@@ -172,7 +172,7 @@ controller_workflows:
 {%         else %}
 {%           if survey_item_content.key is match('choices') and survey_item_content.value[0] is defined %}
           {{ survey_item_content.key }}:
-{%             for choice in survey_item_content.value %}
+{%             for choice in survey_item_content.value if ((survey_item_content.value | string | length) > 0 and (survey_item_content.value | string) is not match('None')) %}
             - {{ choice | regex_replace('(^[^{]*){([{%])(.*)', '!unsafe "\\g<1>{\\g<2>\\g<3>"', multiline=True) }}
 {%             endfor %}
 {%           endif %}
