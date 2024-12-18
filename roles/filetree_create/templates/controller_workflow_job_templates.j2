@@ -24,9 +24,6 @@ controller_workflows:
         unified_job_template: "{{ node.summary_fields.unified_job_template.name | default('ToDo: The node is pointing to a deleted Job Template') }}"
         verbosity: "{{ node.verbosity if node.verbosity != None else '0' }}"
 {% endif %}
-{% if node.limit is defined %}
-        limit: "{{ node.limit }}"
-{% endif %}
 {% if node.job_type %}
         job_type: "{{ node.job_type }}"
 {% if node.summary_fields.unified_job_template.unified_job_type is match('approval') %}
@@ -156,7 +153,7 @@ controller_workflows:
 -%}
 {% if template_overrides_resources.workflow_job_template[current_workflow_job_templates_asset_value.name].survey_spec is defined
       or template_overrides_global.workflow_job_template.survey_spec is defined
-      or (current_workflow_job_templates_asset_value.related.survey_spec is defined and survey_spec_contents | length > 0) %}
+      or (current_workflow_job_templates_asset_value.related.survey_spec is defined and (survey_spec_contents | length > 0 and survey_spec_contents[0] | length > 0)) %}
     survey_spec:
 {% for spec_item in survey_spec_contents %}
       name: "{{ spec_item.name }}"
