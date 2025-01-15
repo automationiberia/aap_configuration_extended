@@ -16,9 +16,6 @@ aap_applications:
     skip_authorization: "{{ template_overrides_resources.application[current_applications_asset_value.name].skip_authorization
                             | default(template_overrides_global.application.skip_authorization)
                             | default(current_applications_asset_value.skip_authorization) }}"
-    client_id: "{{ template_overrides_resources.application[current_applications_asset_value.name].client_id
-                   | default(template_overrides_global.application.client_id)
-                   | default(current_applications_asset_value.client_id) }}"
     client_type: "{{ template_overrides_resources.application[current_applications_asset_value.name].client_type
                      | default(template_overrides_global.application.client_type)
                      | default(current_applications_asset_value.client_type) }}"

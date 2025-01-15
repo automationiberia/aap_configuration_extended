@@ -1,5 +1,5 @@
 ---
-gateway_users:
+aap_user_accounts:
 {% for current_user in current_gateway_users_asset_value %}
   - username: "{{ template_overrides_resources.gateway_user[current_user.username].username
                      | default(template_overrides_global.gateway_user.username)

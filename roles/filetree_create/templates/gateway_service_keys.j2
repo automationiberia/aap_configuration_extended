@@ -15,9 +15,10 @@ gateway_service_keys:
                      | default(current_service_key.algorithm) }}"
 {# NOT RETURNED BY THE API   secret_length: "{{ template_overrides_resources.gateway_route[current_service_key.name].secret_length
                      | default(template_overrides_global.gateway_route.secret_length)
-                     | default(current_service_key.secret_length) }}"
+                     | default(current_service_key.secret_length) }}" #}
     mark_previous_inactive: "{{ template_overrides_resources.gateway_route[current_service_key.name].mark_previous_inactive
                      | default(template_overrides_global.gateway_route.mark_previous_inactive)
-                     | default(current_service_key.mark_previous_inactive) }}" #}
+                     | default(current_service_key.mark_previous_inactive)
+                     | default(false) }}" {# default(false) because it is required but not returned by the API #}
 {% endfor %}
 ...
