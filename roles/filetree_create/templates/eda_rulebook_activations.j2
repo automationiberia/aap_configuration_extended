@@ -27,15 +27,31 @@ eda_rulebook_activations:
                     | default(template_overrides_global.eda_rulebook_activation.git_hash)
                     | default(current_rulebook_activations_asset_value.git_hash) }}"
 {% endif %}
-    scm_refspec: "{{ template_overrides_resources.eda_rulebook_activation[current_rulebook_activations_asset_value.name].scm_refspec
-                     | default(template_overrides_global.eda_rulebook_activation.scm_refspec)
-                     | default(current_rulebook_activations_asset_value.scm_refspec) }}"
-{% if template_overrides_resources.eda_rulebook_activation[current_rulebook_activations_asset_value.name].default_environment is defined
-      or template_overrides_global.eda_rulebook_activation.default_environment is defined
-      or current_job_templates_asset_value.summary_fields.default_environment is defined %}
-    default_environment: "{{ template_overrides_resources.eda_rulebook_activation[current_rulebook_activations_asset_value.name].default_environment
-                             | default(template_overrides_global.eda_rulebook_activation.default_environment)
-                             | default(current_job_templates_asset_value.summary_fields.default_environment.name) }}"
+{% if template_overrides_resources.eda_rulebook_activation[current_rulebook_activations_asset_value.name].rulebook_name is defined
+      or template_overrides_global.eda_rulebook_activation.rulebook_name is defined
+      or current_rulebook_activations_asset_value.rulebook_name is defined %}
+    rulebook_name: "{{ current_rulebook_activations_asset_value.rulebook_name }}"
+{% endif %}
+{% if template_overrides_resources.eda_rulebook_activation[current_rulebook_activations_asset_value.name].organization_name is defined
+      or template_overrides_global.eda_rulebook_activation.organization_name is defined
+      or query_organization_name is defined %}
+    organization_name: "{{ template_overrides_resources.eda_rulebook_activation[current_rulebook_activations_asset_value.name].organization_name
+                           | default(template_overrides_global.eda_rulebook_activation.organization_name)
+                           | default(query_organization_name) }}"
+{% endif %}
+{% if template_overrides_resources.eda_rulebook_activation[current_rulebook_activations_asset_value.name].project_name is defined
+      or template_overrides_global.eda_rulebook_activation.project_name is defined
+      or query_project_name is defined %}
+    project_name: "{{ template_overrides_resources.eda_rulebook_activation[current_rulebook_activations_asset_value.name].project_name
+                                   | default(template_overrides_global.eda_rulebook_activation.project_name)
+                                   | default(query_project_name) }}"
+{% endif %}
+{% if template_overrides_resources.eda_rulebook_activation[current_rulebook_activations_asset_value.name].decision_environment is defined
+      or template_overrides_global.eda_rulebook_activation.decision_environment is defined
+      or query_decision_environment_name is defined %}
+    decision_environment: "{{ template_overrides_resources.eda_rulebook_activation[current_rulebook_activations_asset_value.name].decision_environment
+                                   | default(template_overrides_global.eda_rulebook_activation.decision_environment)
+                                   | default(query_decision_environment_name) }}"
 {% endif %}
 {% if last_rulebook_activation | default(true) | bool %}
 ...

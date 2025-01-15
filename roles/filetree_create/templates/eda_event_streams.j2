@@ -11,9 +11,9 @@ eda_event_streams:
     organization: "{{ template_overrides_resources.eda_event_stream[eda_event_stream.name].organization.name
                       | default(template_overrides_global.eda_event_stream.organization.name)
                       | default(eda_event_stream.organization.name) }}"
-    eda_credential: "{{ template_overrides_resources.eda_event_stream[eda_event_stream.name].eda_credential.name
-                        | default(template_overrides_global.eda_event_stream.eda_credential.name)
-                        | default(eda_event_stream.eda_credential.name) }}"
+    credential_name: "{{ template_overrides_resources.eda_event_stream[eda_event_stream.name].eda_credential.name
+                         | default(template_overrides_global.eda_event_stream.eda_credential.name)
+                         | default(eda_event_stream.eda_credential.name) }}"
     event_stream_type: "{{ template_overrides_resources.eda_event_stream[eda_event_stream.name].event_stream_type
                            | default(template_overrides_global.eda_event_stream.event_stream_type)
                            | default(eda_event_stream.event_stream_type) }}"
