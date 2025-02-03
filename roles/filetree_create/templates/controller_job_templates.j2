@@ -215,7 +215,7 @@ controller_templates:
 {%   for survey_item in spec_item.spec %}
 {%     set _var = namespace(first_survey_item = true) %}
 {%     for survey_item_content in (survey_item | dict2items) if ((survey_item_content.value | string | length) > 0 and (survey_item_content.value | string) is not match('None')) %}
-{%       if survey_item_content.key | regex_search('question_description|default') %}
+{%       if survey_item_content.key | regex_search('question_name|question_description|default') %}
 {%         set current_content = survey_item_content.key + ': !unsafe "' + (survey_item_content.value | regex_replace("\n", "\\\\n") | regex_replace('"', '\\"')) + '"' %}
 {%       elif survey_item_content.key is not match('choices') %}
 {%         set current_content = survey_item_content.key + ': ' + survey_item_content.value | string %}
