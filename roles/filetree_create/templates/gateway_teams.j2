@@ -4,9 +4,9 @@ gateway_teams:
   - name: "{{ template_overrides_resources.gateway_team[current_team.name].name
                      | default(template_overrides_global.gateway_team.name)
                      | default(current_team.name) }}"
-    description: "{{ template_overrides_resources.gateway_team[current_team.name].description
+    description: !unsafe '{{ template_overrides_resources.gateway_team[current_team.name].description
                      | default(template_overrides_global.gateway_team.description)
-                     | default(current_team.description) }}"
+                     | default(current_team.description) | regex_replace("'", "''") }}'
     organization: "{{ template_overrides_resources.gateway_team[current_team.name].organization
                      | default(template_overrides_global.gateway_team.organization)
                      | default(current_team.organization) }}"

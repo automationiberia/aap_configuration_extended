@@ -4,9 +4,9 @@ controller_groups:
 {% endif %}
 {% for group in current_groups_asset_value %}
   - name: "{{ group.name }}"
-    description: "{{ template_overrides_resources.group[group.name].description
+    description: !unsafe '{{ template_overrides_resources.group[group.name].description
                      | default(template_overrides_global.group.description)
-                     | default(group.description) }}"
+                     | default(group.description) | regex_replace("'", "''") }}'
     inventory: "{{ group.summary_fields.inventory.name }}"
 {% if template_overrides_resources.group[group.name].variables is defined
       or template_overrides_global.group.variables is defined

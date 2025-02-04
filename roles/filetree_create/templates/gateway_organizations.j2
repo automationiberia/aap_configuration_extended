@@ -4,8 +4,8 @@ gateway_organizations:
   - name: "{{ template_overrides_resources.gateway_organization[current_organization.name].name
                      | default(template_overrides_global.gateway_organization.name)
                      | default(current_organization.name) }}"
-    description: "{{ template_overrides_resources.gateway_organization[current_organization.name].description
+    description: !unsafe '{{ template_overrides_resources.gateway_organization[current_organization.name].description
                      | default(template_overrides_global.gateway_organization.description)
-                     | default(current_organization.description) }}"
+                     | default(current_organization.description) | regex_replace("'", "''") }}'
 {% endfor %}
 ...
