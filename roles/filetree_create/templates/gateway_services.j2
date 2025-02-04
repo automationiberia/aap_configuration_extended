@@ -4,9 +4,9 @@ gateway_services:
   - name: "{{ template_overrides_resources.gateway_service[current_service.name].name
                      | default(template_overrides_global.gateway_service.name)
                      | default(current_service.name) }}"
-    description: "{{ template_overrides_resources.gateway_service[current_service.name].description
+    description: !unafe '{{ template_overrides_resources.gateway_service[current_service.name].description
                      | default(template_overrides_global.gateway_service.description)
-                     | default(current_service.description) }}"
+                     | default(current_service.description) | regex_replace("'", "''") }}'
     http_port: "{{ template_overrides_resources.gateway_service[current_service.name].http_port
                      | default(template_overrides_global.gateway_service.http_port)
                      | default(current_service.http_port) }}"

@@ -4,9 +4,9 @@ gateway_routes:
   - name: "{{ template_overrides_resources.gateway_route[current_route.name].name
                      | default(template_overrides_global.gateway_route.name)
                      | default(current_route.name) }}"
-    description: "{{ template_overrides_resources.gateway_route[current_route.name].description
+    description: !unsafe '{{ template_overrides_resources.gateway_route[current_route.name].description
                      | default(template_overrides_global.gateway_route.description)
-                     | default(current_route.description) }}"
+                     | default(current_route.description) | regex_replace("'", "''") }}'
     http_port: "{{ template_overrides_resources.gateway_route[current_route.name].http_port
                      | default(template_overrides_global.gateway_route.http_port)
                      | default(current_route.http_port) }}"
