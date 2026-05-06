@@ -1,0 +1,36 @@
+---
+# Seed an AAP 2.5+ instance from tests/configs/upgrade_configs/aap_24 (2.4 layout),
+# after upgrading vars to 2.5 with upgrade_config, then apply via infra.aap_configuration.dispatch.
+#
+# Required env (or equivalent -e vault): CONTROLLER_HOST, CONTROLLER_USERNAME, CONTROLLER_PASSWORD,
+# CONTROLLER_VERIFY_SSL (optional, default true).
+#
+# Example:
+#   CONTROLLER_HOST=aap-export.example.com CONTROLLER_USERNAME=admin CONTROLLER_PASSWORD=… \
+#   CONTROLLER_VERIFY_SSL=false ansible-playbook tests/ci_seed_aap24_dispatch.yml
+#
+- name: Seed AAP from upgraded aap_24 sample configs
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    aap24_configs_dir: "{{ playbook_dir }}/configs/upgrade_configs/aap_24"
+    aap25_configs_dir: "{{ ci_aap25_seed_dir | default('/tmp/ci_aap25_seed_dispatch') }}"
+  tasks:
+    - name: Convert aap_24 CaC to aap_25 layout on disk
+      ansible.builtin.include_role:
+        name: infra.aap_configuration_extended.upgrade_config
+      vars:
+        sanitize: true
+
+    - name: Load upgraded variables for dispatch
+      ansible.builtin.include_vars:
+        dir: "{{ aap25_configs_dir }}"
+        extensions:
+          - yaml
+          - yml
+
+    - name: Apply configuration to controller / gateway
+      ansible.builtin.include_role:
+        name: infra.aap_configuration.dispatch
+...
