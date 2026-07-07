@@ -7,3 +7,5 @@ bugfixes:
   - log CI approval routing and environment protection context in workflow summaries
   - fix pre-commit-tests cache key expression that made the workflow file invalid
   - fix invalid actions/cache commit pin that prevented cache restore and save
+  - remove workflow_run branches filter that blocked tests after pull_request_target
+    approval because the triggering run reports the PR head branch, not devel
