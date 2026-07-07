@@ -1,7 +1,7 @@
 ---
 # Trusted workflow: approval gate for external PRs and .github changes.
 # Does not checkout or execute PR code (no pwn-request risk).
-# Completing this workflow triggers pre-commit and sanity tests via workflow_run.
+# Completing this workflow triggers pre-commit tests rerun via workflow_run.
 name: pre-commit approval
 
 on:

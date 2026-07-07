@@ -6,6 +6,9 @@ bugfixes:
   - run pull request tests on the pull_request event and use workflow_run only to
     re-run them after approval, avoiding checkout of untrusted code in a
     privileged workflow_run context
+  - split workflow_run rerun handling into pre-commit-tests-rerun.yml so CodeQL
+    does not treat checkout steps as running under a privileged workflow_run
+    trigger
   - remove ci-approved labels now that approval completion is the gate signal
   - log CI approval routing and environment protection context in workflow summaries
   - fix pre-commit-tests cache key expression that made the workflow file invalid
