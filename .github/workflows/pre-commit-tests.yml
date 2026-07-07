@@ -252,9 +252,8 @@ jobs:
     if: >
       always() &&
       !cancelled() &&
-      (github.event_name != 'workflow_run'
-        ? needs.pre-commit-tests.result == 'success'
-        : needs.pr-check-start.result == 'success')
+      ((github.event_name != 'workflow_run' && needs.pre-commit-tests.result == 'success') ||
+       (github.event_name == 'workflow_run' && needs.pr-check-start.result == 'success'))
     steps:
       - name: Complete pull request check run
         if: github.event_name == 'workflow_run'
