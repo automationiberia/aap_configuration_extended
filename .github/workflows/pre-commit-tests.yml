@@ -1,68 +1,139 @@
 ---
-# Untrusted code execution: pull_request (fork PRs have no secrets).
-# Ansible collections from Automation Hub are restored from the default-branch
-# cache, which trusted push/schedule runs populate with CRC_PUBLISH_KEY.
+# PR tests are triggered by workflow_run after the trusted pre-commit approval
+# workflow completes. This workflow file always runs from the default branch,
+# while pull request code is checked out via refs/pull/<number>/head.
+# Fork pull requests still run without Automation Hub secrets.
 name: pre-commit and sanity tests
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened, labeled]
+  workflow_run:
+    workflows: ["pre-commit approval"]
+    types: [completed]
+    branches: [devel]
   push:
     branches: [devel]
   schedule:
     - cron: "0 6 * * *"
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.workflow_run.head_branch || github.ref }}
   cancel-in-progress: true
 
 permissions:
   contents: read
   pull-requests: read
+  actions: read
 
 jobs:
   approval-gate:
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'workflow_run'
     runs-on: ubuntu-latest
     outputs:
       approved: ${{ steps.check.outputs.approved }}
+      head_sha: ${{ steps.check.outputs.head_sha }}
+      head_repo_full_name: ${{ steps.check.outputs.head_repo_full_name }}
+      pr_number: ${{ steps.check.outputs.pr_number }}
     steps:
-      - name: Verify ci-approved label for current head SHA
+      - name: Validate approval workflow completion
         id: check
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         with:
           script: |
-            const label = `ci-approved-${context.payload.pull_request.head.sha.slice(0, 7)}`;
-            const labels = context.payload.pull_request.labels.map((item) => item.name);
-            const approved = labels.includes(label);
-            core.setOutput('approved', approved ? 'true' : 'false');
-            core.notice(
-              `Expected approval label: ${label}; approved=${approved}`,
-              { title: 'CI approval gate' },
+            const run = context.payload.workflow_run;
+            const { owner, repo } = context.repo;
+
+            if (run.conclusion !== 'success' || run.event !== 'pull_request_target') {
+              core.setOutput('approved', 'false');
+              core.notice(
+                `Workflow run not eligible: conclusion=${run.conclusion}, event=${run.event}`,
+                { title: 'CI approval gate' },
+              );
+              return;
+            }
+
+            const pullRequests = run.pull_requests ?? [];
+            if (pullRequests.length === 0) {
+              core.setOutput('approved', 'false');
+              core.notice('No pull requests associated with workflow run', { title: 'CI approval gate' });
+              return;
+            }
+
+            const { data: jobsResponse } = await github.rest.actions.listJobsForWorkflowRun({
+              owner,
+              repo,
+              run_id: run.id,
+            });
+            const approvalJob = jobsResponse.jobs.find(
+              (job) =>
+                (job.name === 'auto-approve' || job.name === 'manual-approval') &&
+                job.conclusion === 'success',
             );
+            if (!approvalJob) {
+              core.setOutput('approved', 'false');
+              core.notice('No successful approval job in workflow run', { title: 'CI approval gate' });
+              return;
+            }
+
+            const pullRequestMeta = pullRequests[0];
+            const { data: pullRequest } = await github.rest.pulls.get({
+              owner,
+              repo,
+              pull_number: pullRequestMeta.number,
+            });
+
+            if (pullRequest.state !== 'open') {
+              core.setOutput('approved', 'false');
+              core.notice(`Pull request #${pullRequest.number} is ${pullRequest.state}`, { title: 'CI approval gate' });
+              return;
+            }
+
+            if (pullRequest.head.sha !== run.head_sha) {
+              core.setOutput('approved', 'false');
+              core.notice(
+                `Head SHA mismatch: pr=${pullRequest.head.sha}, workflow_run=${run.head_sha}`,
+                { title: 'CI approval gate' },
+              );
+              return;
+            }
+
+            core.setOutput('approved', 'true');
+            core.setOutput('head_sha', pullRequest.head.sha);
+            core.setOutput('head_repo_full_name', pullRequest.head.repo.full_name);
+            core.setOutput('pr_number', String(pullRequest.number));
+
+            core.summary
+              .addHeading('CI approval gate')
+              .addRaw(`- PR: #${pullRequest.number}\n`)
+              .addRaw(`- Head SHA: ${pullRequest.head.sha}\n`)
+              .addRaw(`- Head repository: ${pullRequest.head.repo.full_name}\n`)
+              .addRaw(`- Approval job: ${approvalJob.name}\n`)
+              .addRaw('- Approved: true\n')
+              .write();
 
   pre-commit-tests:
     needs: approval-gate
     runs-on: ubuntu-latest
     if: >
       always() &&
-      (github.event_name != 'pull_request' ||
-       needs.approval-gate.outputs.approved == 'true')
+      (github.event_name == 'push' ||
+       github.event_name == 'schedule' ||
+       (github.event_name == 'workflow_run' &&
+        needs.approval-gate.outputs.approved == 'true'))
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.12", "3.13", "3.14"]
     env:
-      HAS_CERTIFIED_HUB: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
-      ANSIBLE_GALAXY_SERVER_LIST: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && 'certified,galaxy' || 'galaxy' }}
+      HAS_CERTIFIED_HUB: ${{ github.event_name != 'workflow_run' || needs.approval-gate.outputs.head_repo_full_name == github.repository }}
+      ANSIBLE_GALAXY_SERVER_LIST: ${{ (github.event_name != 'workflow_run' || needs.approval-gate.outputs.head_repo_full_name == github.repository) && 'certified,galaxy' || 'galaxy' }}
       ANSIBLE_GALAXY_SERVER_CERTIFIED_URL: https://console.redhat.com/api/automation-hub/content/published/
       ANSIBLE_GALAXY_SERVER_CERTIFIED_AUTH_URL: https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token
-      ANSIBLE_GALAXY_SERVER_CERTIFIED_TOKEN: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && secrets.CRC_PUBLISH_KEY || '' }}
+      ANSIBLE_GALAXY_SERVER_CERTIFIED_TOKEN: ${{ (github.event_name != 'workflow_run' || needs.approval-gate.outputs.head_repo_full_name == github.repository) && secrets.CRC_PUBLISH_KEY || '' }}
       ANSIBLE_GALAXY_SERVER_GALAXY_URL: https://galaxy.ansible.com/api/
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ github.event_name == 'workflow_run' && format('refs/pull/{0}/head', needs.approval-gate.outputs.pr_number) || github.sha }}
 
       - name: Set Ansible collections cache key
         id: collections_cache_key
