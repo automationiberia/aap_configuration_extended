@@ -9,3 +9,5 @@ bugfixes:
   - fix invalid actions/cache commit pin that prevented cache restore and save
   - remove workflow_run branches filter that blocked tests after pull_request_target
     approval because the triggering run reports the PR head branch, not devel
+  - publish a pre-commit check run on the pull request head SHA so workflow_run
+    test results appear on the pull request and can be required for merge
