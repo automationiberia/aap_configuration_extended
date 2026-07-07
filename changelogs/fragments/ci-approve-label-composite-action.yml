@@ -6,3 +6,4 @@ bugfixes:
   - remove ci-approved labels now that approval completion is the gate signal
   - log CI approval routing and environment protection context in workflow summaries
   - fix pre-commit-tests cache key expression that made the workflow file invalid
+  - fix invalid actions/cache commit pin that prevented cache restore and save
