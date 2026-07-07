@@ -3,11 +3,12 @@ bugfixes:
   - trigger pull request CI from workflow_run after the trusted pre-commit approval
     workflow completes, avoiding PAT-based label coordination and pull_request
     races with GITHUB_TOKEN
+  - run pull request tests on the pull_request event and use workflow_run only to
+    re-run them after approval, avoiding checkout of untrusted code in a
+    privileged workflow_run context
   - remove ci-approved labels now that approval completion is the gate signal
   - log CI approval routing and environment protection context in workflow summaries
   - fix pre-commit-tests cache key expression that made the workflow file invalid
   - fix invalid actions/cache commit pin that prevented cache restore and save
   - remove workflow_run branches filter that blocked tests after pull_request_target
     approval because the triggering run reports the PR head branch, not devel
-  - publish a pre-commit check run on the pull request head SHA so workflow_run
-    test results appear on the pull request and can be required for merge
