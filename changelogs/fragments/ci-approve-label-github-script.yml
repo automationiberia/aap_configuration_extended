@@ -5,4 +5,6 @@ bugfixes:
   - run pull request tests only on the ci-approved labeled event and reset the
     label at the start of each approval run, so stale labels do not trigger tests
     before manual approval completes
+  - read current pull request labels from the API before re-applying ci-approved,
+    because the workflow event payload is stale after the reset step removes it
   - fix invalid actions/cache commit pin that prevented cache restore and save
