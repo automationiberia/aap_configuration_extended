@@ -30,6 +30,18 @@ jobs:
             github:
               - '.github/**'
 
+      - name: Reset CI approval label
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const label = 'ci-approved';
+            const { owner, repo } = context.repo;
+            const issue_number = context.payload.pull_request.number;
+            const labels = context.payload.pull_request.labels.map(l => l.name);
+            if (labels.includes(label)) {
+              await github.rest.issues.removeLabel({ owner, repo, issue_number, name: label });
+            }
+
   auto-approve:
     needs: check-changes
     if: >-
