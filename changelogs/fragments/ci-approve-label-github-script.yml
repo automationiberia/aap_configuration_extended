@@ -2,9 +2,9 @@
 bugfixes:
   - compute the Ansible collections cache key in cache steps instead of job env,
     because hashFiles is not available in jobs.<job_id>.env
-  - run pull request tests only on the ci-approved labeled event and reset the
-    label at the start of each approval run, so stale labels do not trigger tests
-    before manual approval completes
-  - read current pull request labels from the API before re-applying ci-approved,
-    because the workflow event payload is stale after the reset step removes it
+  - wait in the pull request approval-gate job until pre-commit approval completes
+    before running tests, instead of re-running workflows via workflow_run
+  - gate pull_request test execution on a successful pre-commit approval workflow run
+    for the current head SHA
+  - remove ci-approved labels now that approval completion is the gate signal
   - fix invalid actions/cache commit pin that prevented cache restore and save
