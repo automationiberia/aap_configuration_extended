@@ -2,11 +2,9 @@
 bugfixes:
   - compute the Ansible collections cache key in cache steps instead of job env,
     because hashFiles is not available in jobs.<job_id>.env
-  - trigger pull request tests via workflow_run after the trusted pre-commit approval
-    workflow completes, because GITHUB_TOKEN cannot fire pull_request labeled events
+  - wait in the pull request approval-gate job until pre-commit approval completes
+    before running tests, instead of re-running workflows via workflow_run
   - gate pull_request test execution on a successful pre-commit approval workflow run
     for the current head SHA
-  - split workflow_run rerun handling into pre-commit-tests-rerun.yml so CodeQL
-    does not treat checkout steps as running under a privileged workflow_run trigger
   - remove ci-approved labels now that approval completion is the gate signal
   - fix invalid actions/cache commit pin that prevented cache restore and save
