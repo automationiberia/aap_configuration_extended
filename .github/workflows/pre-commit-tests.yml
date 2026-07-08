@@ -1,12 +1,12 @@
 ---
 # Untrusted code execution: pull_request (fork PRs have no secrets).
-# Ansible collections from Automation Hub are restored from the default-branch
-# cache, which trusted push/schedule runs populate with CRC_PUBLISH_KEY.
+# After approval, pre-commit-tests-rerun.yml re-runs this workflow via workflow_run.
+# Push/schedule runs populate the Ansible collections cache for external PRs.
 name: pre-commit and sanity tests
 
 on:
   pull_request:
-    types: [labeled]
+    types: [opened, synchronize, reopened]
   push:
     branches: [devel]
   schedule:
@@ -18,13 +18,81 @@ concurrency:
 
 permissions:
   contents: read
+  pull-requests: read
 
 jobs:
+  approval-gate:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    outputs:
+      approved: ${{ steps.check.outputs.approved }}
+    steps:
+      - name: Validate CI approval for pull request head SHA
+        id: check
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const pullRequest = context.payload.pull_request;
+            const headSha = pullRequest.head.sha;
+
+            if (pullRequest.base.ref !== 'devel') {
+              core.setOutput('approved', 'false');
+              core.notice(
+                `Pull request #${pullRequest.number} targets ${pullRequest.base.ref}, expected devel`,
+                { title: 'CI approval gate' },
+              );
+              return;
+            }
+
+            const { data: runs } = await github.rest.actions.listWorkflowRuns({
+              owner,
+              repo,
+              workflow_id: 'pre-commit-approve.yml',
+              head_sha: headSha,
+              event: 'pull_request_target',
+              status: 'completed',
+              per_page: 20,
+            });
+
+            const approvalRun = runs.workflow_runs.find((item) => item.conclusion === 'success');
+            if (!approvalRun) {
+              core.setOutput('approved', 'false');
+              core.notice(
+                `No successful pre-commit approval workflow run found for ${headSha}`,
+                { title: 'CI approval gate' },
+              );
+              return;
+            }
+
+            const { data: jobsResponse } = await github.rest.actions.listJobsForWorkflowRun({
+              owner,
+              repo,
+              run_id: approvalRun.id,
+            });
+            const approvalJob = jobsResponse.jobs.find(
+              (job) =>
+                (job.name === 'auto-approve' || job.name === 'manual-approval') &&
+                job.conclusion === 'success',
+            );
+            if (!approvalJob) {
+              core.setOutput('approved', 'false');
+              core.notice('No successful approval job found for head SHA', { title: 'CI approval gate' });
+              return;
+            }
+
+            core.setOutput('approved', 'true');
+
   pre-commit-tests:
+    needs: approval-gate
     runs-on: ubuntu-latest
     if: >
-      github.event_name != 'pull_request' ||
-      github.event.label.name == 'ci-approved'
+      always() &&
+      !cancelled() &&
+      (github.event_name == 'push' ||
+       github.event_name == 'schedule' ||
+       (github.event_name == 'pull_request' &&
+        needs.approval-gate.outputs.approved == 'true'))
     strategy:
       fail-fast: false
       matrix:
