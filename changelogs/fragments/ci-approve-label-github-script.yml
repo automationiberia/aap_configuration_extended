@@ -2,3 +2,7 @@
 bugfixes:
   - compute the Ansible collections cache key in cache steps instead of job env,
     because hashFiles is not available in jobs.<job_id>.env
+  - run pull request tests only on the ci-approved labeled event and reset the
+    label at the start of each approval run, so stale labels do not trigger tests
+    before manual approval completes
+  - fix invalid actions/cache commit pin that prevented cache restore and save
