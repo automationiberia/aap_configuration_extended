@@ -56,7 +56,8 @@ jobs:
             const label = 'ci-approved';
             const { owner, repo } = context.repo;
             const issue_number = context.payload.pull_request.number;
-            const labels = context.payload.pull_request.labels.map(l => l.name);
+            const { data: issue } = await github.rest.issues.get({ owner, repo, issue_number });
+            const labels = issue.labels.map((item) => item.name);
             if (!labels.includes(label)) {
               await github.rest.issues.addLabels({ owner, repo, issue_number, labels: [label] });
             }
@@ -79,7 +80,8 @@ jobs:
             const label = 'ci-approved';
             const { owner, repo } = context.repo;
             const issue_number = context.payload.pull_request.number;
-            const labels = context.payload.pull_request.labels.map(l => l.name);
+            const { data: issue } = await github.rest.issues.get({ owner, repo, issue_number });
+            const labels = issue.labels.map((item) => item.name);
             if (!labels.includes(label)) {
               await github.rest.issues.addLabels({ owner, repo, issue_number, labels: [label] });
             }
