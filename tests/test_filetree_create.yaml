@@ -35,9 +35,10 @@
         - aap_token is not defined
 
 - name: "Test the filetree_create role"
-  # Run example: ansible-playbook test_filetree_create.yaml -e@vault-aap-controller.yaml
-  # Run example: ansible-playbook test_filetree_create.yaml -e@vault-aap-controller.yaml --tags default
-  # Run example: ansible-playbook test_filetree_create.yaml -e@vault-aap-controller.yaml --tags flatten
+  # Run example: ansible-playbook test_filetree_create.yaml -e@vault-aap-a.yaml
+  # Run example: ansible-playbook test_filetree_create.yaml -e@vault-aap-a.yaml --tags default
+  # Run example: ansible-playbook test_filetree_create.yaml -e@vault-aap-a.yaml --tags flatten
+  # Legacy: -e@vault-aap-controller.yaml
   hosts: localhost
   connection: local
   gather_facts: false

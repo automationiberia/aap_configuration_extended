@@ -19,6 +19,15 @@ Python's pre-commit tool can be installed, and hooks installed, to cleanup white
 4. With hooks installed, they will be run automatically when you call `git commit`, blocking commit if any hooks fail.
 5. [Optional] If you want to ignore hook failures and commit anyway, use `git commit -n`
 6. [Optional] Run pre-commit checks at any time with `pre-commit run --all -c .pre-commit-config.yaml`.
+7. [Optional] Run the AAP regression suite before committing (manual stage; not part of the default commit hooks). Copy `tests/vault-aap-a.yaml.example` / `tests/vault-aap-b.yaml.example` to gitignored vault files, then:
+
+   ```bash
+   REGRESSION_TIERS=offline pre-commit run aap-regression --hook-stage manual
+   # or full suite (skips live tiers when vaults are absent):
+   pre-commit run aap-regression --hook-stage manual
+   ```
+
+   Details: [tests/README.md](../tests/README.md).
 
 Please see pre-commit documentation for further explanation: [Pre-commit](https://pre-commit.com/)
 

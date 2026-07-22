@@ -1,0 +1,7 @@
+---
+minor_changes:
+  - |
+    Add optional AAP regression harness on the add_full_tests branch: vault-aap-a/b
+    connection examples, tests/scripts/run-regression.sh and run-roundtrip.sh, and a
+    pre-commit hook (aap-regression) on the manual stage so live/offline suites can
+    be run before commit without changing default commit hooks.

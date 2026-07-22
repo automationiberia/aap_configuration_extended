@@ -1,0 +1,12 @@
+---
+# Instance B — secondary AAP for dual-instance tests / PRO (target).
+# Copy to vault-aap-b.yaml (gitignored) and fill in real values:
+#   cp tests/vault-aap-b.yaml.example tests/vault-aap-b.yaml
+#
+# Used by live-ab regression tier (e.g. JT/WFJT related export from A,
+# import_filetree into B).
+
+vault_aap_hostname: "aap-b.example.com"
+vault_aap_username: "admin"
+vault_aap_password: "CHANGE_ME"
+vault_aap_validate_certs: false

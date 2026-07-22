@@ -41,7 +41,9 @@ Override all `filetree_*` paths to the temp input/export dir (see `tests/configs
 
 ## Workflow
 
-Run from `tests/` with `vault-aap-controller.yaml` (or env vars).
+Run from `tests/` with `vault-aap-a.yaml` (preferred) or legacy `vault-aap-controller.yaml` / env vars.
+
+Or run the wrapper: `bash tests/scripts/run-roundtrip.sh`.
 
 ### 1. Import (seed → AAP)
 
@@ -49,7 +51,7 @@ Do **not** pass the reserved tag `all` on the CLI (it runs every play). Use `tes
 
 ```bash
 ansible-playbook test_filetree_read.yaml \
-  -e@vault-aap-controller.yaml \
+  -e@vault-aap-a.yaml \
   -e@configs/roundtrip_extra_vars/extra_vars_read.yml \
   --skip-tags custom,fc,fcf,gv \
   --tags "$(tr -d '\n' < configs/roundtrip/ansible_tags)"
@@ -61,7 +63,7 @@ The roundtrip play sets `filetree_read_run_all: true` so every filetree_read obj
 
 ```bash
 ansible-playbook test_filetree_create.yaml \
-  -e@vault-aap-controller.yaml \
+  -e@vault-aap-a.yaml \
   --tags "always,default,yaml_format" \
   --skip-tags "cleanup,flatten"
 ```
@@ -72,7 +74,7 @@ Do **not** override `input_tag`. Export is written to `/tmp/filetree_output_defa
 
 ```bash
 ansible-playbook test_filetree_read.yaml \
-  -e@vault-aap-controller.yaml \
+  -e@vault-aap-a.yaml \
   -e@configs/roundtrip_extra_vars/extra_vars_read_export.yml \
   --skip-tags custom,fc,fcf,gv \
   --tags "$(tr -d '\n' < configs/roundtrip/ansible_tags)"

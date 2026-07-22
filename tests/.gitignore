@@ -1,4 +1,7 @@
 ansible_collections
 ansible.cfg
 vault-aap-controller.yaml
+vault-aap-a.yaml
+vault-aap-b.yaml
 paths.yaml
+output/

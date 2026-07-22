@@ -2,11 +2,11 @@
 # Seed an AAP 2.5+ instance from tests/configs/upgrade_configs/aap_24 (2.4 layout),
 # after upgrading vars to 2.5 with upgrade_config, then apply via infra.aap_configuration.dispatch.
 #
-# Required env (or equivalent -e vault): CONTROLLER_HOST, CONTROLLER_USERNAME, CONTROLLER_PASSWORD,
-# CONTROLLER_VERIFY_SSL (optional, default true).
+# Connection: prefer -e @vault-aap-a.yaml (or env CONTROLLER_*).
 #
 # Example:
-#   CONTROLLER_HOST=aap-export.example.com CONTROLLER_USERNAME=admin CONTROLLER_PASSWORD=… \
+#   ansible-playbook tests/ci_seed_aap24_dispatch.yml -e @tests/vault-aap-a.yaml
+#   CONTROLLER_HOST=aap-a.example.com CONTROLLER_USERNAME=admin CONTROLLER_PASSWORD=… \
 #   CONTROLLER_VERIFY_SSL=false ansible-playbook tests/ci_seed_aap24_dispatch.yml
 #
 - name: Seed AAP from upgraded aap_24 sample configs

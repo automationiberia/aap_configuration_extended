@@ -35,4 +35,17 @@ repos:
       - id: changelog
       - id: galaxy-importer
       - id: sanity
+
+  # Optional: does not run on default `git commit`. Invoke explicitly:
+  #   pre-commit run aap-regression --hook-stage manual
+  #   REGRESSION_TIERS=offline pre-commit run aap-regression --hook-stage manual
+  - repo: local
+    hooks:
+      - id: aap-regression
+        name: AAP regression suite (optional)
+        entry: bash tests/scripts/run-regression.sh
+        language: system
+        pass_filenames: false
+        stages: [manual]
+        always_run: true
 ...

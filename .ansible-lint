@@ -11,6 +11,19 @@ exclude_paths:
   - 'tests/templated_role_example'
   - .ansible/
   - '.pre-commit-cache/'
+  # Gated until feature/filetree-object-diff merges (plugins/role not on this branch yet)
+  - 'tests/test_filetree_cac_diff.yaml'
+  - 'tests/test_filetree_object_diff_full.yml'
+  - 'tests/test_filetree_object_diff_lookup.yaml'
+  - 'tests/playbooks/test_filetree_cac_diff.yml'
+  - 'tests/playbooks/test_filetree_object_diff_all.yml'
+  - 'tests/playbooks/test_filetree_object_diff_lookup.yml'
+  - 'tests/playbooks/setup_filetree_object_diff.yml'
+  - 'tests/playbooks/tasks/filetree_object_diff_cleanup_strays.yml'
+  - 'tests/playbooks/tasks/filetree_object_diff_setup_type.yml'
+  - 'tests/playbooks/tasks/filetree_object_diff_validate_type.yml'
+  - 'tests/playbooks/tasks/object_diff_query_api_type.yml'
+  - 'tests/playbooks/tasks/aap_oauth.yml'
 # parseable: true
 use_default_rules: true
 strict: true
@@ -38,4 +51,6 @@ kinds:
   - vars: "**/examples/configs_export_model/*.yml"
   - vars: "**/examples/vars/*.yml"
   - vars: "**/roles/**/tests/configs/*.yml"
+  - vars: "**/tests/configs/filetree_object_diff/**/*.{yml,yaml}"
+  - vars: "**/tests/vars/*.{yml,yaml}"
 ...

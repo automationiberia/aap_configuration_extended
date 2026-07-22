@@ -1,0 +1,12 @@
+---
+# Instance A — primary AAP for regression / roundtrip / PRE (source).
+# Copy to vault-aap-a.yaml (gitignored) and fill in real values:
+#   cp tests/vault-aap-a.yaml.example tests/vault-aap-a.yaml
+#
+# Legacy alias: vault-aap-controller.yaml is still recognized by some
+# playbooks; prefer vault-aap-a.yaml for new work.
+
+vault_aap_hostname: "aap-a.example.com"
+vault_aap_username: "admin"
+vault_aap_password: "CHANGE_ME"
+vault_aap_validate_certs: false
