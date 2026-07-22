@@ -610,8 +610,9 @@ ansible-playbook playbooks/import_filetree.yml \
   objects (by name) without recursively cascading their related set (avoids cycles). Re-run related
   export on those nested workflows if you need their full dependency tree.
 - Job nodes (`unified_job_type: job`) still cascade each Job Template with its full related set.
-- If `yaml_format` warns about missing PyYAML, the export files are still valid; install PyYAML for
-  the configured `interpreter_python`, or use `--skip-tags yaml_format`.
+- The optional tag `yaml_format` requires PyYAML (`python3-yaml`) on the interpreter Ansible uses
+  for modules. Without it the play fails; install the package or use `--skip-tags yaml_format`
+  (export files are still written before that step).
 - See also playbooks: `export_job_template_related.yml`, `export_workflow_job_template_related.yml`, `import_filetree.yml`.
 
 ## License

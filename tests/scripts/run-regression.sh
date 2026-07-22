@@ -25,6 +25,9 @@ cd "${COLLECTION_ROOT}"
 export ANSIBLE_CONFIG="${TESTS_DIR}/ansible.cfg"
 export ANSIBLE_LOCAL_TEMP="${ANSIBLE_LOCAL_TEMP:-/tmp/ansible-local-regression}"
 export ANSIBLE_REMOTE_TEMP="${ANSIBLE_REMOTE_TEMP:-/tmp/ansible-remote-regression}"
+# Prefer this workspace checkout over any older install under ~/.ansible/collections
+# Layout: .../ansible_collections/infra/<collection> → COLLECTIONS_PATH = parent of ansible_collections
+export ANSIBLE_COLLECTIONS_PATH="$(cd "${COLLECTION_ROOT}/../../.." && pwd):${ANSIBLE_COLLECTIONS_PATH:-${HOME}/.ansible/collections:/usr/share/ansible/collections}"
 mkdir -p "${ANSIBLE_LOCAL_TEMP}" "${ANSIBLE_REMOTE_TEMP}"
 
 VAULT_A="${VAULT_A:-${TESTS_DIR}/vault-aap-a.yaml}"
@@ -101,6 +104,7 @@ run_offline() {
     tests/test_filetree_read.yaml \
     tests/test_kerberos_credential_type_export.yaml \
     tests/test_gateway_role_user_assignments_resolve.yaml \
+    tests/prepare_aap_origin.yml \
     tests/ci_seed_aap24_dispatch.yml \
     tests/ci_filetree_read_exported.yml
   do
@@ -120,6 +124,13 @@ run_live_a() {
   fi
 
   cd "${TESTS_DIR}"
+
+  if [[ "${REGRESSION_SKIP_PREPARE:-0}" != "1" ]]; then
+    echo "--- prepare AAP origin (minimal objects) ---"
+    ansible-playbook prepare_aap_origin.yml -e@"${VAULT_A}"
+  else
+    skip_msg "prepare_aap_origin (REGRESSION_SKIP_PREPARE=1)"
+  fi
 
   if [[ -f test_kerberos_credential_type_export.yaml ]]; then
     if [[ "${REGRESSION_SKIP_KERBEROS:-0}" == "1" ]]; then

@@ -1,19 +1,20 @@
 ---
-# Validates gateway role_user_assignments against objects identified by name
-# where the platform supports it, and by resolved id for controller credentials.
+# Prepare origin AAP (instance A) with minimal objects expected by live regression
+# tests before they run. Idempotent — safe to re-run.
 #
-# Prerequisites (also ensured by tests/prepare_aap_origin.yml):
-#   - Organization Default
-#   - Machine credential roundtrip-rbac-credential
+# Ensures:
+#   - OAuth token (ansible.platform.token)
+#   - Organization "Default" (usually already present)
+#   - Machine credential "roundtrip-rbac-credential" (needed by gateway RBAC
+#     resolve test and roundtrip gateway_role_user_assignments.yaml)
+#   - Credential Admin assignment for admin on that credential (numeric object_id;
+#     gateway name→id for controller credentials is unreliable — see
+#     test_gateway_role_user_assignments_resolve.yaml)
 #
-# Platform note: ansible.platform resolves object_id names via gateway list
-# endpoints (organizations, teams, …, credentials). Controller credentials live
-# under /api/controller/v2/credentials/, so name→id lookup for
-# "Credential Admin" often fails and the API returns 500 when given a bare
-# name. This playbook resolves the credential id via the controller API, then
-# applies assignments (org by name, credential by id).
+# Example:
+#   ansible-playbook tests/prepare_aap_origin.yml -e @tests/vault-aap-a.yaml
 #
-- name: Test gateway role user assignment name resolution
+- name: Prepare AAP origin for live regression
   hosts: localhost
   connection: local
   gather_facts: false
@@ -32,7 +33,8 @@
         inputs:
           username: roundtrip
           password: "{{ vaulted_controller_credentials_roundtrip_rbac_credential_password | default('roundtrip') }}"
-  tasks:
+
+  pre_tasks:
     - name: Setup authentication
       no_log: true
       when: not (ansible_facts.get('aap_token') or aap_token is defined)
@@ -54,14 +56,11 @@
         - ansible_facts.get('aap_token') is defined
         - aap_token is not defined
 
-    - name: Ensure Default organization exists
-      ansible.builtin.include_role:
-        name: infra.aap_configuration.gateway_organizations
+  roles:
+    - role: infra.aap_configuration.gateway_organizations
+    - role: infra.aap_configuration.controller_credentials
 
-    - name: Ensure roundtrip-rbac-credential exists (name resolution target)
-      ansible.builtin.include_role:
-        name: infra.aap_configuration.controller_credentials
-
+  post_tasks:
     - name: Look up credential id via controller API
       ansible.builtin.uri:
         url: "https://{{ aap_hostname }}/api/controller/v2/credentials/?name=roundtrip-rbac-credential"
@@ -70,22 +69,16 @@
           Authorization: "Bearer {{ aap_token.token | default(aap_token) }}"
         validate_certs: "{{ aap_validate_certs }}"
         status_code: 200
-      register: __rbac_cred_lookup
+      register: __prep_cred_lookup
       no_log: true
 
-    - name: Assert credential was found
+    - name: Assert prepare credential exists
       ansible.builtin.assert:
         that:
-          - (__rbac_cred_lookup.json.count | default(0) | int) >= 1
-        fail_msg: >-
-          Credential roundtrip-rbac-credential not found after bootstrap.
-          Run tests/prepare_aap_origin.yml first.
+          - (__prep_cred_lookup.json.count | default(0) | int) >= 1
+        fail_msg: Failed to create or find roundtrip-rbac-credential on origin AAP.
 
-    - name: Store credential primary key
-      ansible.builtin.set_fact:
-        __rbac_cred_id: "{{ __rbac_cred_lookup.json.results[0].id }}"
-
-    - name: Apply gateway role user assignments (org by name, credential by id)
+    - name: Ensure gateway RBAC assignments for prepared objects
       ansible.builtin.include_role:
         name: infra.aap_configuration.gateway_role_user_assignments
       vars:
@@ -96,8 +89,15 @@
             user: admin
           - role_definition: Credential Admin
             object_ids:
-              - "{{ __rbac_cred_id }}"
+              - "{{ __prep_cred_lookup.json.results[0].id }}"
             user: admin
+
+    - name: Show prepare summary
+      ansible.builtin.debug:
+        msg: >-
+          Origin AAP {{ aap_hostname }} ready: org Default, credential
+          roundtrip-rbac-credential (id={{ __prep_cred_lookup.json.results[0].id }}),
+          and related gateway role assignments.
 
     - name: Delete OAuth token
       when: aap_token is defined

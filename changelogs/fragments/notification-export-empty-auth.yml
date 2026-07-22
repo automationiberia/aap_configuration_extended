@@ -1,0 +1,5 @@
+---
+bugfixes:
+  - filetree_create - always export empty ``username``/``password`` for email
+    (and ``password`` for irc) notification templates so re-import satisfies
+    Controller required fields (roundtrip).

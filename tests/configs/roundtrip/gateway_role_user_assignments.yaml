@@ -1,11 +1,9 @@
 ---
+# Org name resolution via gateway works. Credential Admin by credential name is
+# exercised in tests/test_gateway_role_user_assignments_resolve.yaml (id lookup).
 gateway_role_user_assignments:
   - role_definition: "Organization Member"
     object_ids:
       - Default
-    user: admin
-  - role_definition: "Credential Admin"
-    object_ids:
-      - roundtrip-rbac-credential
     user: admin
 ...

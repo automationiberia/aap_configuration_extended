@@ -1,20 +1,21 @@
 ---
 aap_user_accounts:
+  # Keep admin password aligned with the live vault so roundtrip does not
+  # overwrite admin with an undefined / wrong secret.
   - username: admin
     email: admin@example.com
     first_name: ''
     last_name: ''
-    password: '{{ vaulted_gateway_users_admin_password }}'
+    password: "{{ vaulted_gateway_users_admin_password | default(vault_aap_password) | default(lookup('env', 'CONTROLLER_PASSWORD')) }}"
     is_superuser: true
-    authenticators:
-      - 1
+    authenticators: []
     authenticator_uid: admin
   - username: controller_user
     email: ''
     first_name: ''
     last_name: ''
-    password: '{{ vaulted_gateway_users_controller_user_password }}'
-    is_superuser: 'False'
+    password: "{{ vaulted_gateway_users_controller_user_password | default('roundtrip') }}"
+    is_superuser: false
     authenticators: []
     authenticator_uid: ''
 ...

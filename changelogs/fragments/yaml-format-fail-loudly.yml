@@ -1,0 +1,4 @@
+---
+bugfixes:
+  - filetree_create - Fail the play when ``yaml_format`` cannot run (e.g. missing PyYAML)
+    instead of rescuing and reporting success with ``failed=0``.

@@ -39,6 +39,10 @@ for name, content in extras.items():
     (extras_dir / name).write_text(content)
 
 # Portable overrides (fcf exports may contain environment-specific numeric IDs).
+# Organization Member resolves org names via gateway. Credential Admin by
+# credential *name* is not reliable (controller credentials are not on the
+# gateway list API) — covered by tests/test_gateway_role_user_assignments_resolve.yaml
+# with controller-API id lookup instead.
 (roundtrip / 'gateway_role_user_assignments.yaml').write_text(
     '---\n'
     'gateway_role_user_assignments:\n'
@@ -46,10 +50,29 @@ for name, content in extras.items():
     '    object_ids:\n'
     '      - Default\n'
     '    user: admin\n'
-    '  - role_definition: "Credential Admin"\n'
-    '    object_ids:\n'
-    '      - roundtrip-rbac-credential\n'
-    '    user: admin\n'
+    '...\n'
+)
+
+# Vaulted user passwords must resolve during roundtrip (see vaulted_defaults.yml).
+(roundtrip / 'gateway_users.yaml').write_text(
+    '---\n'
+    'aap_user_accounts:\n'
+    '  - username: admin\n'
+    '    email: admin@example.com\n'
+    "    first_name: ''\n"
+    "    last_name: ''\n"
+    '    password: "{{ vaulted_gateway_users_admin_password | default(vault_aap_password) | default(lookup(\'env\', \'CONTROLLER_PASSWORD\')) }}"\n'
+    '    is_superuser: true\n'
+    '    authenticators: []\n'
+    '    authenticator_uid: admin\n'
+    '  - username: controller_user\n'
+    "    email: ''\n"
+    "    first_name: ''\n"
+    "    last_name: ''\n"
+    '    password: "{{ vaulted_gateway_users_controller_user_password | default(\'roundtrip\') }}"\n'
+    '    is_superuser: false\n'
+    '    authenticators: []\n'
+    "    authenticator_uid: ''\n"
     '...\n'
 )
 
@@ -159,6 +182,18 @@ cred_file.write_text(cred_text)
     '    sync: false\n'
     '  - name: staging\n'
     '    sync: false\n'
+    '...\n'
+)
+
+# fcf groups may reference a non-existent host placeholder "HERE"
+(roundtrip / 'controller_groups.yaml').write_text(
+    '---\n'
+    'controller_groups:\n'
+    '  - name: "manual_group"\n'
+    '    description: ""\n'
+    '    inventory: "test_manual_hosts_inv"\n'
+    '    hosts:\n'
+    '      - manual_host\n'
     '...\n'
 )
 

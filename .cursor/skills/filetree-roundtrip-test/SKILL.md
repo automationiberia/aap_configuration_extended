@@ -52,6 +52,7 @@ Do **not** pass the reserved tag `all` on the CLI (it runs every play). Use `tes
 ```bash
 ansible-playbook test_filetree_read.yaml \
   -e@vault-aap-a.yaml \
+  -e@configs/roundtrip_extra_vars/vaulted_defaults.yml \
   -e@configs/roundtrip_extra_vars/extra_vars_read.yml \
   --skip-tags custom,fc,fcf,gv \
   --tags "$(tr -d '\n' < configs/roundtrip/ansible_tags)"
@@ -64,17 +65,21 @@ The roundtrip play sets `filetree_read_run_all: true` so every filetree_read obj
 ```bash
 ansible-playbook test_filetree_create.yaml \
   -e@vault-aap-a.yaml \
-  --tags "always,default,yaml_format" \
-  --skip-tags "cleanup,flatten"
+  --tags "always,default" \
+  --skip-tags "cleanup,flatten,yaml_format"
 ```
 
 Do **not** override `input_tag`. Export is written to `/tmp/filetree_output_default/`.
+
+Optional polish: add tag `yaml_format` only if system `python3-yaml` is available for
+Ansible’s module interpreter; otherwise the play fails (no soft rescue).
 
 ### 3. Re-import (export → AAP, idempotent check)
 
 ```bash
 ansible-playbook test_filetree_read.yaml \
   -e@vault-aap-a.yaml \
+  -e@configs/roundtrip_extra_vars/vaulted_defaults.yml \
   -e@configs/roundtrip_extra_vars/extra_vars_read_export.yml \
   --skip-tags custom,fc,fcf,gv \
   --tags "$(tr -d '\n' < configs/roundtrip/ansible_tags)"

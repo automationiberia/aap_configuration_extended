@@ -1,0 +1,16 @@
+---
+# Defaults for {{ vaulted_* }} placeholders in roundtrip seed / re-import.
+# Loaded by tests/scripts/run-roundtrip.sh. Override via -e or a real env_variables
+# file when testing secret injection end-to-end.
+#
+# Admin password follows the AAP vault so roundtrip does not reset admin to a
+# disposable value. Other secrets use fixed test-only strings.
+vaulted_gateway_users_admin_password: "{{ vault_aap_password | default(lookup('env', 'CONTROLLER_PASSWORD'), true) }}"
+vaulted_gateway_users_controller_user_password: roundtrip
+vaulted_controller_credentials_roundtrip_rbac_credential_password: roundtrip
+
+# ansible.controller.application was removed; gateway_applications uses
+# ansible.platform.application. Keep only the gateway role for aap_applications.
+aap_configuration_dispatcher_exclude_roles:
+  - controller_applications
+...
