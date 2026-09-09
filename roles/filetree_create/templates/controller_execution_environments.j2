@@ -6,12 +6,12 @@ controller_execution_environments: {{ [] if current_execution_environments_asset
   - name: "{{ ee.name }}"
 {%     if template_overrides_resources.ee[ee.name].description
                      | default(template_overrides_global.ee.description)
-                     | default(ee.description) | regex_replace("'", "''") not in __empty_values %}
+                     | default(ee.description) not in __empty_values %}
     description: |-
       {{ '{%- raw -%}' }}
       {{ template_overrides_resources.ee[ee.name].description
                      | default(template_overrides_global.ee.description)
-                     | default(ee.description) | regex_replace("'", "''") | indent(6) }}
+                     | default(ee.description) | indent(6) }}
       {{ '{%- endraw -%}' }}
 {%     endif %}
 {%     if ee.summary_fields.organization.name is defined %}
